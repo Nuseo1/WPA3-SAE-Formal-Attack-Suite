@@ -16,7 +16,7 @@ The suite is designed for **security researchers, Wi-Fi protocol engineers, and 
 
 ## 🆕 What's New: Multi-Group Support (Groups 19–24)
 
-Previously, the suite exclusively supported Group 19 (ECC, NIST P-256) for SAE parameter extraction and injection. The new script (`wpa3_sae_formal_attacks_github.py`) extends this to full support for both Scalar and Finite Field elements across Groups 19–24, covering additional ECC and FFC groups defined in the SAE standard.
+Previously, the suite exclusively supported Group 19 (ECC, NIST P-256) for SAE parameter extraction and injection. The new script (`wpa3_sae_formal_attacks.py`) extends this to full support for both Scalar and Finite Field elements across Groups 19–24, covering additional ECC and FFC groups defined in the SAE standard.
 
 The required group-specific parameter values are extracted using `sae_extractor_arxiv_all_groups.py`, which replaces `sae_extractor.py` for multi-group scenarios.
 
