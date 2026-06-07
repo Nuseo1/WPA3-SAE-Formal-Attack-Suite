@@ -316,7 +316,9 @@ Based on: "What a Mesh: Formal Security Analysis of WPA3 SAE Wireless
 # ==============================================================================
 def build_sae_payload(group_id: int, scalar: bytes, element: bytes, pw_id: str = None) -> bytes:
     """Builds SAE Commit payload per IEEE 802.11-2020 §12.4.5.4."""
-    payload = group_id.to_bytes(2, 'big') + scalar + element
+    # IEEE 802.11 uses Little-Endian for the Group ID
+    group_bytes = SAE_GROUP_BYTES.get(group_id, group_id.to_bytes(2, 'little'))
+    payload = group_bytes + scalar + element
     if pw_id is not None:
         payload += pw_id.encode('utf-8')
     return payload
