@@ -82,7 +82,7 @@ sudo airmon-ng start wlan0
 
 ### 2. Fill in target configuration in the script
 
-Edit the following constants in `wpa3_sae_formal_attacks_github.py`:
+Edit the following constants in `wpa3_sae_formal_attacks.py`:
 
 ```python
 TARGET_BSSID_5GHZ   = "AA:BB:CC:DD:EE:11"  # Replace with your AP's 5GHz BSSID
@@ -122,22 +122,22 @@ ADAPTER_CONFIGURATION = {
 
 ```bash
 # Use the configuration defined in the script
-sudo python3 wpa3_sae_formal_attacks_github.py
+sudo python3 wpa3_sae_formal_attacks.py
 
 # Override attack and interfaces via CLI
-sudo python3 wpa3_sae_formal_attacks_github.py \
+sudo python3 wpa3_sae_formal_attacks.py \
     --interfaces wlan0mon,wlan1mon \
     --band 5GHz,2.4GHz \
     --attack commit_flood
 
 # Override only the attack type (keep configured interfaces)
-sudo python3 wpa3_sae_formal_attacks_github.py --attack deadlock
+sudo python3 wpa3_sae_formal_attacks.py --attack deadlock
 
 # Dry-run (construct packets without sending)
-sudo python3 wpa3_sae_formal_attacks_github.py --dry-run --attack zero_scalar
+sudo python3 wpa3_sae_formal_attacks.py --dry-run --attack zero_scalar
 
 # Show full attack encyclopedia
-sudo python3 wpa3_sae_formal_attacks_github.py --help
+sudo python3 wpa3_sae_formal_attacks.py --help
 ```
 
 ## Optional: Automatic Channel Scanner
