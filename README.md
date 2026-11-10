@@ -24,7 +24,7 @@ The suite is designed for **security researchers, Wi-Fi protocol engineers, and 
   * Guaranteed Locally Administered Unicast MAC generation (`Bit 0 = 0`, `Bit 1 = 1`) to prevent early MAC-layer frame drops.
   * True peer-commit reflection ($c_L = c_R$) in `reflection_attack`.
 * **Persistent L2 Sockets**: Eliminates per-burst Linux kernel `synchronize_net()` stalls for maximum packet throughput.
-* **airgeddon Auto-Close Integration**: Real-time companion monitor (`watch_pass_auto_close_en.sh`) that tracks Airgeddon Captive Portal activity and gracefully stops `wpa3_sae_formal_attacks_auto_close_v2_en.py` via `SIGTERM` as soon as the valid password is captured.
+* **airgeddon Auto-Close Integration**: Real-time companion monitor (`watch_pass_auto_close_en.sh`) that tracks airgeddon Captive Portal activity and gracefully stops `wpa3_sae_formal_attacks_auto_close_v2_en.py` via `SIGTERM` as soon as the valid password is captured.
 
 ---
 
