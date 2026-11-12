@@ -169,35 +169,35 @@ python3 wpa3_sae_formal_attacks_v2.py --help
 
 ### Step 4 (Optional): airgeddon Captive Portal + Auto-Close Workflow
 
-When pairing the WPA3-SAE DoS suite with an **airgeddon Evil Twin Captive Portal**, you can use the auto-close workflow to automatically terminate the Python attack as soon as a client submits the valid password:
+> 💡 **WPA2/WPA3 Transition Mode:** This workflow is designed for **WPA2/WPA3 Transition Mode** networks, where a valid WPA2 handshake is captured first! `airgeddon` still verifies the entered password directly against that captured handshake as usual. The WPA3-SAE DoS script just runs alongside `airgeddon` to block WPA3/PMF (802.11w) clients that are immune to standard WPA2 deauths. Also, the monitor script doesn't stop on wrong attempts (`ag.et_attempts.txt`)—it only stops the WPA3 attack once `airgeddon` has verified the password against the handshake and written the final `evil_twin_captive_portal_password-*.txt` file.
 
-1. **Start airgeddon Captive Portal:**
+1. **Configure the Default Save Path in airgeddon:**
+Use the [`default_save_path.sh`](https://github.com/KeyofBlueS/airgeddon-plugins/blob/master/default_save_path.sh) plugin to set a fixed default output directory in `airgeddon` (e.g., `airgeddon/plugins/output`) so `watch_pass_auto_close_en.sh` can automatically detect captured password files.
 
-   Launch airgeddon and set up your Evil Twin Captive Portal attack until the portal is actively running.
+2. **Start airgeddon Captive Portal:**
+Launch airgeddon and set up your Evil Twin Captive Portal attack (using the captured WPA2 handshake) until the portal is actively running.
 
-2. **Start the Live Monitor (Terminal 1):**
+3. **Start the Live Monitor (Terminal 1):**
+Make `watch_pass_auto_close_en.sh` executable and run it:
+```bash
+chmod +x watch_pass_auto_close_en.sh
+./watch_pass_auto_close_en.sh
 
-   Make `watch_pass_auto_close_en.sh` executable and run it:
+```
 
-   ```bash
-   chmod +x watch_pass_auto_close_en.sh
-   ./watch_pass_auto_close_en.sh
-   ```
+*(Make sure `PW_OUTPUT_DIR` inside `watch_pass_auto_close_en.sh` matches the directory configured in [`default_save_path.sh`](https://github.com/KeyofBlueS/airgeddon-plugins/blob/master/default_save_path.sh)).*
 
-   *(Make sure `PW_OUTPUT_DIR` inside `watch_pass_auto_close_en.sh` points to your `airgeddon/plugins/output` directory).*
+4. **Start the Auto-Close Attack Script (Terminal 2):**
+Launch the auto-close version of the attack suite with `sae_params.json`:
+```bash
+sudo python3 wpa3_sae_formal_attacks_auto_close_v2_en.py --sae-file sae_params.json
 
-3. **Start the Auto-Close Attack Script (Terminal 2):**
-
-   Launch the auto-close version of the attack suite with `sae_params.json`:
-
-   ```bash
-   sudo python3 wpa3_sae_formal_attacks_auto_close_v2_en.py --sae-file sae_params.json
-   ```
+```
 
 **How it works:**
 
 * `watch_pass_auto_close_en.sh` monitors new DHCP clients (`[CLIENT]`), live portal keystrokes (`[INPUT]`), and failed password attempts (`[ATTEMPT]`) with audio alerts.
-* Once airgeddon writes the verified password to the output file, the monitor displays `[HIT]`, triggers a desktop notification, sends `SIGTERM` to `wpa3_sae_formal_attacks_auto_close_v2_en.py` for a clean shutdown, and exits automatically.
+* Once airgeddon verifies the password against the captured handshake and writes it to the output file, the monitor displays `[HIT]`, triggers a desktop notification, sends `SIGTERM` to `wpa3_sae_formal_attacks_auto_close_v2_en.py` for a clean shutdown, and exits automatically.
 
 ---
 
