@@ -82,7 +82,7 @@ sudo apt install iw iproute2 wireless-tools aircrack-ng sox pulseaudio-utils lib
 
 Use a standard **Managed Mode** Wi-Fi interface (e.g., `wlan0`) to extract valid cryptographic SAE pairs across Groups 19–24 for your target AP.
 
-> 💡 **Note:** For several attacks—such as `group_mismatch_tiebreaker_deadlock`, `zero_scalar`, `invalid_curve`, or `open_auth`—pre-extracted SAE parameters are **not** required!
+> 💡 **Note:** For several attacks — such as `group_mismatch_tiebreaker_deadlock`, `zero_scalar`, `invalid_curve`, or `open_auth` — pre-extracted SAE parameters are **not** required!
 
 1. **Run extraction for the 5 GHz band first:**
 
