@@ -52,7 +52,7 @@ The suite is designed for **security researchers, Wi-Fi protocol engineers, and 
 | 6 | `invalid_curve` | Information Leak | §12.4.5.4 | **No** *(uses `0x00` element)* |
 | 7 | `downgrade` | Group Downgrade | §12.4.8.6.4, Erratum #19 | **No** *(uses `os.urandom`)* |
 | 8 | `open_auth` | Legacy DoS | IEEE 802.11 | **No** *(no SAE payload)* |
-| 9 | `unknown_pw_id` | Memory DoS / Stall | §VI-C, Errata #1, #16 | **Yes** *(no Known MACs needed)* |
+| 9 | `unknown_pw_id` | Memory DoS / Stall | §VI-C, Errata #1, #16 | **No** *(Optional)* |
 | 10 | `simultaneous_pw_id_conflict` | Non-termination Loop | §VI-C-1, Erratum #A | **Yes** |
 | 11 | `group_mismatch_tiebreaker_deadlock` | State Machine Deadlock | §VI-C-3, Erratum #M | **No** *(uses `0x00` payload)* |
 | 12 | `threshold_boundary` | Spec Flaw / DoS | §12.4.6, App.B.C | **Yes** |
