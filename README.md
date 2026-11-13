@@ -42,21 +42,21 @@ The suite is designed for **security researchers, Wi-Fi protocol engineers, and 
 
 ## Implemented Attacks
 
-| # | Attack Name | Type | Paper Reference |
-|---|---|---|---|
-| 1 | `commit_flood` | DoS (Cookie Guzzler) | §VI-B |
-| 2 | `reflection_attack` | Auth Bypass | §VI-A, Erratum #23 |
-| 3 | `memory_exhaustion` | Resource DoS | §VI-B, Erratum #5 |
-| 4 | `deadlock` | State Machine Deadlock | §VI-B, Errata #16, #17 |
-| 5 | `zero_scalar` | Cryptographic Weakness | §12.4.5.4 |
-| 6 | `invalid_curve` | Information Leak | §12.4.5.4 |
-| 7 | `downgrade` | Group Downgrade | §12.4.8.6.4, Erratum #19 |
-| 8 | `open_auth` | Legacy DoS | IEEE 802.11 |
-| 9 | `unknown_pw_id` | Memory DoS / Stall | §VI-C, Errata #1, #16 |
-| 10 | `simultaneous_pw_id_conflict` | Non-termination Loop | §VI-C-1, Erratum #A |
-| 11 | `group_mismatch_tiebreaker_deadlock` | State Machine Deadlock | §VI-C-3, Erratum #M |
-| 12 | `threshold_boundary` | Spec Flaw / DoS | §12.4.6, App.B.C |
-| 13 | `silent_discard` | Error Handling Test | §12.4.8.6.3, App.B.K |
+| # | Attack Name | Type | Paper Reference | SAE Params Required (`sae_params.json`) |
+|---|---|---|---|---|
+| 1 | `commit_flood` | DoS (Cookie Guzzler) | §VI-B | **Yes** |
+| 2 | `reflection_attack` | Auth Bypass | §VI-A, Erratum #23 | **Yes** |
+| 3 | `memory_exhaustion` | Resource DoS | §VI-B, Erratum #5 | **Yes** *(+ Known MACs)* |
+| 4 | `deadlock` | State Machine Deadlock | §VI-B, Errata #16, #17 | **Yes** *(for 1st Commit)* |
+| 5 | `zero_scalar` | Cryptographic Weakness | §12.4.5.4 | **No** *(uses `0x00` scalar)* |
+| 6 | `invalid_curve` | Information Leak | §12.4.5.4 | **No** *(uses `0x00` element)* |
+| 7 | `downgrade` | Group Downgrade | §12.4.8.6.4, Erratum #19 | **No** *(uses `os.urandom`)* |
+| 8 | `open_auth` | Legacy DoS | IEEE 802.11 | **No** *(no SAE payload)* |
+| 9 | `unknown_pw_id` | Memory DoS / Stall | §VI-C, Errata #1, #16 | **Yes** *(no Known MACs needed)* |
+| 10 | `simultaneous_pw_id_conflict` | Non-termination Loop | §VI-C-1, Erratum #A | **Yes** |
+| 11 | `group_mismatch_tiebreaker_deadlock` | State Machine Deadlock | §VI-C-3, Erratum #M | **No** *(uses `0x00` payload)* |
+| 12 | `threshold_boundary` | Spec Flaw / DoS | §12.4.6, App.B.C | **Yes** |
+| 13 | `silent_discard` | Error Handling Test | §12.4.8.6.3, App.B.K | **No** *(uses `0x00` scalar)* |
 
 ---
 
@@ -126,7 +126,7 @@ Use a standard **Managed Mode** Wi-Fi interface (e.g., `wlan0`) to extract valid
 
 3. **Optional – Capture Known Client MACs (`capture_known_macs_v2.py`):**
 
-   To populate `known_macs` for `memory_exhaustion` or `unknown_pw_id`, configure the target parameters at the top of `capture_known_macs_v2.py`:
+   To populate `known_macs` (required only for the `memory_exhaustion` attack), configure the target parameters at the top of `capture_known_macs_v2.py`:
 
    ```python
    MONITOR_IFACE  = "wlan0mon"
