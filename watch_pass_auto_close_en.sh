@@ -38,7 +38,7 @@ PAT_CURRENTPASS="*/ag*/www/ag.et_currentpass.txt"
 PAT_CLTS="*/ag*/clts.txt"
 
 # Hit directory (one file per SSID, written by airgeddon)
-PW_OUTPUT_DIR="/root/Schreibtisch/airgeddon-dev/plugins/output"
+PW_OUTPUT_DIR="/root/airgeddon/plugins/output"
 PW_PATTERN="evil_twin_captive_portal_password-*.txt"
 
 # Should the monitor close itself after a hit?
