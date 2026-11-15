@@ -188,15 +188,11 @@ python3 wpa3_sae_formal_attacks_v2.py --help
 
 > 💡 **WPA2/WPA3 Transition Mode:** This workflow is designed for **WPA2/WPA3 Transition Mode** networks, where a valid WPA2 handshake is captured first! `airgeddon` still verifies the entered password directly against that captured handshake as usual. The WPA3-SAE DoS script just runs alongside `airgeddon` to block WPA3/PMF (802.11w) clients that are immune to standard WPA2 deauths. Also, the monitor script doesn't stop on wrong attempts (`ag.et_attempts.txt`)—it only stops the WPA3 attack once `airgeddon` has verified the password against the handshake and written the final `evil_twin_captive_portal_password-*.txt` file.
 
-1. **Configure the Default Save Path in airgeddon:**
-
-   Use the [`default_save_path.sh`](https://github.com/KeyofBlueS/airgeddon-plugins/blob/master/default_save_path.sh) plugin to set a fixed default output directory in `airgeddon` (e.g., `airgeddon/plugins/output`) so `watch_pass_auto_close_en.sh` can automatically detect captured password files.
-
-2. **Start airgeddon Captive Portal:**
+1. **Start airgeddon Captive Portal:**
 
    Launch airgeddon and set up your Evil Twin Captive Portal attack (using the captured WPA2 handshake) until the portal is actively running.
 
-3. **Start the Live Monitor (Terminal 1):**
+2. **Start the Live Monitor (Terminal 1):**
 
    Make `watch_pass_auto_close_en.sh` executable and run it:
 
@@ -205,9 +201,13 @@ python3 wpa3_sae_formal_attacks_v2.py --help
    ./watch_pass_auto_close_en.sh
    ```
 
-   *(Make sure `PW_OUTPUT_DIR` inside `watch_pass_auto_close_en.sh` matches the directory configured in [`default_save_path.sh`](https://github.com/KeyofBlueS/airgeddon-plugins/blob/master/default_save_path.sh)).*
+   > ⚠️ **Note:** The path may need to be changed! Make sure `PW_OUTPUT_DIR` inside `watch_pass_auto_close_en.sh` matches the output directory where airgeddon saves the captured password files, e.g.:
+   >
+   > ```bash
+   > PW_OUTPUT_DIR="/root/airgeddon/plugins/output"
+   > ```
 
-4. **Start the Auto-Close Attack Script (Terminal 2):**
+3. **Start the Auto-Close Attack Script (Terminal 2):**
 
    Launch the auto-close version of the attack suite with `sae_params.json`:
 
