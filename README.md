@@ -33,7 +33,7 @@ The suite is designed for **security researchers, Wi-Fi protocol engineers, and 
 | File | Description |
 |---|---|
 | `sae_extractor_arxiv_all_groups_v2.py` | Extracts valid SAE scalars and finite elements (Groups 19–24) directly from `wpa_supplicant` debug logs and merges them into `sae_params.json`. |
-| `capture_known_macs_v2.py` | Triggers and captures valid Unicast STA MAC addresses from incomplete SAE handshakes (for `memory_exhaustion` / `unknown_pw_id`) and updates `sae_params.json`. |
+| `capture_known_macs_v2.py` | Triggers and captures valid Unicast STA MAC addresses from incomplete SAE handshakes (for `memory_exhaustion`) and updates `sae_params.json`. |
 | `wpa3_sae_formal_attacks_v2.py` | Main attack suite implementing all 13 formal attacks, background channel tracking, and `--sae-file` loading. |
 | `wpa3_sae_formal_attacks_auto_close_v2_en.py` | Modified attack suite featuring an external `SIGTERM` orchestrator shutdown handler for automated termination via the airgeddon monitor. |
 | `watch_pass_auto_close_en.sh` | Live monitor for airgeddon Captive Portal attacks with audio alerts, desktop notifications, and automatic shutdown of the Python attack suite upon password capture. |
