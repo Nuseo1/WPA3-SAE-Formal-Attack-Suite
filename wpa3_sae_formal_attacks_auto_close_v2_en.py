@@ -1097,7 +1097,7 @@ def main():
     try:
         while True:
             if SHUTDOWN_FLAG.value:
-                logger.info("[ORCHESTRATOR] Externer Stopp-Befehl empfangen. Beende Hauptschleife...")
+                logger.info("[ORCHESTRATOR] External stop command received. Exiting main loop...")
                 break
 
             for iface, cfg in ADAPTER_CONFIGURATION.items():
